@@ -12,7 +12,7 @@ from fastapi.responses import FileResponse
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy import JSON, DateTime, ForeignKey, Integer, String, Text, create_engine, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, relationship, sessionmaker
@@ -22,11 +22,21 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
-    database_url: str = "postgresql+psycopg://recruit:recruit@localhost:5432/recruitment"
+    database_url: str
     jwt_secret: str = "change-this-secret-before-deploying"
     access_token_minutes: int = 720
     upload_dir: str = "uploads"
     cors_origins: str = "http://localhost:5173"
+
+    @field_validator("database_url")
+    @classmethod
+    def normalize_database_url(cls, value: str) -> str:
+        value = value.strip()
+        if value.startswith(("postgres://", "postgresql://")):
+            return "postgresql+psycopg://" + value.split("://", 1)[1]
+        if value.startswith("postgresql+psycopg2://"):
+            return "postgresql+psycopg://" + value.split("://", 1)[1]
+        return value
 
 settings = Settings()
 Path(settings.upload_dir).mkdir(parents=True, exist_ok=True)

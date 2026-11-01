@@ -55,6 +55,12 @@ Frontend (Node 20+), in a second terminal:
 
 Set VITE_API_URL if the API is not at http://localhost:8000.
 
+## Deploy the backend on Render
+
+Configure the backend Web Service with **Root Directory** `backend`, **Build Command** `pip install -r requirements.txt`, and **Start Command** `uvicorn app.main:app --host 0.0.0.0 --port $PORT`.
+
+In the Render Environment settings, set `DATABASE_URL` to the **Internal Database URL** copied from your Render PostgreSQL database. The app accepts Render's `postgres://` or `postgresql://` URL and normalizes it for the installed psycopg v3 driver. Also set `JWT_SECRET` to a long, unique random value and `CORS_ORIGINS` to your deployed frontend origin. Do not use a localhost URL for the Render database. Save the settings, then use **Manual Deploy → Deploy latest commit**.
+
 ## Working features
 
 - Recruiter registration and login, bcrypt password hashes, signed JWT sessions, and recruiter-scoped data.
